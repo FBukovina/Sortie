@@ -2,6 +2,7 @@ from pathlib import Path
 import shutil
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
+from sorter import get_category
 folder = Path("test_files")
 
 
@@ -23,18 +24,6 @@ for file in folder.iterdir():
 
 root = tk.Tk()
 root.last_moves = []
-
-def get_category(file):
-    extension = file.suffix.lower()
-
-    if extension in [".jpg", ".jpeg", ".png"]:
-        return "Images"
-    elif extension in [".pdf", ".docx", ".txt"]:
-        return "Documents"
-    elif extension in [".mp3", ".wav"]:
-        return "Audio"
-    else:
-        return "Others"
 
 def choose_folder():
     selected_folder = filedialog.askdirectory()
@@ -100,12 +89,12 @@ def organize_files():
         moved_files.append((destination, file))
         moved += 1
 
-        if moved_files:
-            root.last_moves = moved_files
+    if moved_files:
+        root.last_moves = moved_files
 
-        messagebox.showinfo(
-            "Sortie",
-            f"Moved: {moved}\nSkipped: {skipped}"
+    messagebox.showinfo(
+        "Sortie",
+        f"Moved: {moved}\nSkipped: {skipped}"
         )
 preview_sort()
 
@@ -129,17 +118,18 @@ def undo_sort():
             continue
 
         try:
-            shutil.movef(str(destination), str(original))
+            shutil.move(str(destination), str(original))
             restored += 1
         except OSError:
             remaining.append((destination, original))
 
-            root.last_moves = remaining
+        root.last_moves = remaining
 
-            messagebox.showinfo(
-                "Sortie",
-                f"Restored: {restored}\nSkipped: {len(remaining)}"
+        messagebox.showinfo(
+            "Sortie",
+            f"Restored: {restored}\nSkipped: {len(remaining)}"
             )
+        
 preview_sort()
 
 root.title("Sortie")
