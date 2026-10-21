@@ -25,6 +25,23 @@ for file in folder.iterdir():
 root = tk.Tk()
 root.last_moves = []
 
+def refresh_file_list(event=None):
+    file_list.delete(0, tk.END)
+
+    if not hasattr(root, "selected_folder"):
+        return
+
+    search = search_entry.get().lower()
+
+    for file in root.selected_folder.rglob("*"):
+        if file.is_file():
+            if search in file.name.lower():
+                relative_path = file.relative_to(root.selected_folder)
+                file_list.insert(
+                    tk.END,
+                    f"{relative_path} -> {get_category(file)}"
+                )
+
 def choose_folder():
     selected_folder = filedialog.askdirectory()
 
@@ -33,11 +50,7 @@ def choose_folder():
         folder_label.config(
             text=f"Selected: {Path(selected_folder).name}"
         )
-        file_list.delete(0, tk.END)
-
-        for file in Path(selected_folder).iterdir():
-            if file.is_file():
-                file_list.insert(tk.END, f"{file.name} -> {get_category(file)}")
+        refresh_file_list()
 
 def preview_sort():
     if not hasattr(root, "selected_folder"):
@@ -170,6 +183,17 @@ folder_label = tk.Label(
     bg="#2d2929"
 )
 folder_label.pack(pady=10)
+
+search_entry = tk.Entry(
+    root,
+    font=("Helvetica", 13),
+    bg="#383333",
+    fg="white",
+    insertbackground="white",
+)
+
+search_entry.pack(fill="x", padx=20, pady=10)
+search_entry.bind("<KeyRelease>", refresh_file_list)
 
 file_list = tk.Listbox(
     root,
